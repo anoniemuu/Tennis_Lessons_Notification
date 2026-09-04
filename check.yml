@@ -1,0 +1,62 @@
+name: Check tennis training spots
+
+on:
+  schedule:
+    # Every 5 minutes, offset from :00 because GitHub says the start of the hour
+    # is a high-load time for scheduled workflows.
+    - cron: '2-57/5 * * * *'
+      timezone: 'Europe/Amsterdam'
+  workflow_dispatch:
+    inputs:
+      test_notification:
+        description: 'Only send a test phone notification'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tc-uithof-training-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify Chrome exists
+        run: google-chrome --version
+
+      - name: Send test notification
+        if: ${{ inputs.test_notification == true }}
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          TARGET_LEVELS: '7,8'
+        run: python3 monitor.py --test-notification
+
+      - name: Check TC de Uithof
+        if: ${{ inputs.test_notification != true }}
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          TARGET_LEVELS: '7,8'
+        run: python3 monitor.py
+
+      - name: Save deduplication state
+        if: ${{ inputs.test_notification != true }}
+        run: |
+          if git diff --quiet -- state.json; then
+            echo "State did not change."
+            exit 0
+          fi
+          git config user.name "tc-uithof-monitor[bot]"
+          git config user.email "tc-uithof-monitor[bot]@users.noreply.github.com"
+          git add state.json
+          git commit -m "Update training spot state [skip ci]"
+          git pull --rebase
+          git push
