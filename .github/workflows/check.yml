@@ -1,11 +1,6 @@
 name: Check tennis training spots
 
 on:
-  schedule:
-    # Every 5 minutes, offset from :00 because GitHub says the start of the hour
-    # is a high-load time for scheduled workflows.
-    - cron: '2-57/5 * * * *'
-      timezone: 'Europe/Amsterdam'
   workflow_dispatch:
     inputs:
       test_notification:
