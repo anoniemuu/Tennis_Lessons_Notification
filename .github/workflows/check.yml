@@ -32,14 +32,14 @@ jobs:
         if: ${{ inputs.test_notification == true }}
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          TARGET_LEVELS: '5,7,8'
+          TARGET_LEVELS: '7,8'
         run: python3 monitor.py --test-notification
 
       - name: Check TC de Uithof
         if: ${{ inputs.test_notification != true }}
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          TARGET_LEVELS: '5,7,8'
+          TARGET_LEVELS: '7,8'
         run: python3 monitor.py
 
       - name: Save deduplication state
