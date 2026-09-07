@@ -27,7 +27,7 @@ from typing import Iterable
 PAGE_URL = os.getenv("PAGE_URL", "https://tcdeuithof.com/")
 LEVELS = tuple(
     sorted(
-        {int(x.strip()) for x in os.getenv("TARGET_LEVELS", "5,7,8").split(",") if x.strip()}
+        {int(x.strip()) for x in os.getenv("TARGET_LEVELS", "7,8").split(",") if x.strip()}
     )
 )
 STATE_PATH = Path(os.getenv("STATE_PATH", "state.json"))
