@@ -24,7 +24,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Iterable
 
-PAGE_URL = os.getenv("PAGE_URL", "https://tcdeuithof.nl/cancel/index.html")
+PAGE_URL = os.getenv("PAGE_URL", "https://tcdeuithof.com/")
 LEVELS = tuple(
     sorted(
         {int(x.strip()) for x in os.getenv("TARGET_LEVELS", "5,7,8").split(",") if x.strip()}
@@ -141,7 +141,6 @@ def render_page(url: str) -> str:
         "--disable-gpu",
         "--disable-dev-shm-usage",
         "--disable-extensions",
-        "--disable-background-networking",
         "--blink-settings=imagesEnabled=false",
         "--virtual-time-budget=10000",
         "--dump-dom",
