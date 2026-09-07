@@ -133,6 +133,7 @@ def find_chrome() -> str:
 
 def render_page(url: str) -> str:
     chrome = find_chrome()
+
     cmd = [
         chrome,
         "--headless=new",
@@ -146,21 +147,47 @@ def render_page(url: str) -> str:
         "--dump-dom",
         url,
     ]
-    result = subprocess.run(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        timeout=45,
-        check=False,
+
+    max_attempts = 3
+    last_error = None
+
+    for attempt in range(1, max_attempts + 1):
+        print(f"Chrome render attempt {attempt}/{max_attempts}...")
+
+        try:
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=35,
+                check=False,
+            )
+
+            if result.returncode != 0:
+                raise RuntimeError(
+                    f"Chrome failed with exit code {result.returncode}: "
+                    f"{result.stderr[-1500:]}"
+                )
+
+            if not result.stdout.strip():
+                raise RuntimeError("Chrome returned an empty document")
+
+            print(f"Chrome render attempt {attempt} succeeded.")
+            return result.stdout
+
+        except subprocess.TimeoutExpired:
+            last_error = f"Chrome timed out after 35 seconds on attempt {attempt}"
+            print(f"WARNING: {last_error}", file=sys.stderr)
+
+        except RuntimeError as exc:
+            last_error = str(exc)
+            print(f"WARNING: attempt {attempt} failed: {exc}", file=sys.stderr)
+
+    raise RuntimeError(
+        f"Could not render the TC de Uithof page after {max_attempts} attempts. "
+        f"Last error: {last_error}"
     )
-    if result.returncode != 0:
-        raise RuntimeError(
-            f"Chrome failed with exit code {result.returncode}: {result.stderr[-1500:]}"
-        )
-    if not result.stdout.strip():
-        raise RuntimeError("Chrome returned an empty document")
-    return result.stdout
 
 
 def contains_target_level(text: str) -> bool:
